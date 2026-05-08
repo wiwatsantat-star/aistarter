@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>INSIDER 👁️ Online v6</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* --- FULL CSS FROM V5 --- */
+:root{
+  --bg:#06060f;--s:#0d0d1c;--c1:#13132a;--c2:#1c1c38;
+  --gold:#e8a020;--g2:#ffd06a;--gdim:#7a520a;
+  --red:#e84040;--grn:#30c070;--blue:#4499ff;--pur:#9060ff;
+  --txt:#dde0f0;--dim:#6868a0;--bdr:#22224a;
+  --M:#44aaff;--I:#ff5555;--C:#55dd88;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--txt);font-family:'Sarabun',sans-serif;min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column}
+.screen{display:none;padding:20px;max-width:500px;margin:0 auto;width:100%;animation:fade 0.4s ease}
+.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:0}}
+
+h1,h2,h3{font-family:'Cinzel',serif;text-align:center;letter-spacing:1px}
+.gold{color:var(--gold)}
+.card{background:var(--c1);border:1px solid var(--bdr);border-radius:24px;padding:25px;margin-bottom:20px;text-align:center;position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
+.btn{background:linear-gradient(135deg,var(--gold),#b07010);color:#000;border:none;padding:16px;border-radius:16px;font:700 16px 'Sarabun';cursor:pointer;width:100%;margin-bottom:12px;transition:0.2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn:active{transform:scale(0.96)}
+.btn-sec{background:var(--c2);color:var(--txt);border:1px solid var(--bdr)}
+
+/* Timer UI */
+.timer-wrap{position:relative;width:90px;height:90px;margin:0 auto 15px}
+.t-svg{transform:rotate(-90deg);width:90px;height:90px}
+.t-bg{fill:none;stroke:var(--c2);stroke-width:6}
+.t-bar{fill:none;stroke:var(--gold);stroke-width:6;stroke-linecap:round;stroke-dasharray:251;stroke-dashoffset:0;transition:1s linear}
+#t-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font:700 22px 'Cinzel';color:var(--gold)}
+
+/* Player List & Vote UI */
+.p-item{display:flex;align-items:center;padding:12px;background:var(--c2);border:1px solid var(--bdr);border-radius:12px;margin-bottom:8px}
+.p-name{flex:1;font-weight:600}
+.p-badge{padding:2px 8px;border-radius:6px;font-size:12px;background:var(--gdim);color:var(--g2)}
+</style>
+</head>
+<body>
+
+<div id="s-home" class="screen active">
+  <div style="text-align:right;margin-bottom:20px">
+    <button class="btn btn-sec" style="width:auto;display:inline-flex" onclick="toggleLang()">TH/EN</button>
+  </div>
+  <div style="margin:40px 0;text-align:center">
+    <div style="font-size:64px;margin-bottom:10px">👁️</div>
+    <h1 id="t-title">INSIDER</h1>
+    <p id="t-sub" style="color:var(--dim)">FIND THE MASTERMIND</p>
+  </div>
+  <button class="btn" onclick="showScreen('s-setup')"><span id="t-create">สร้างห้องใหม่</span></button>
+  <button class="btn btn-sec" onclick="showScreen('s-join')"><span id="t-join">เข้าร่วมห้อง</span></button>
+</div>
+
+<div id="s-setup" class="screen">
+  <h2 id="t-setup-h">ตั้งค่าห้อง</h2>
+  <div class="card">
+    <input type="text" id="m-name" placeholder="ชื่อของคุณ" style="width:100%;padding:15px;border-radius:12px;background:var(--c2);border:1px solid var(--bdr);color:#fff;margin-bottom:15px">
+    <p style="text-align:left;margin-bottom:10px" id="t-cat">หมวดหมู่คำศัพท์:</p>
+    <select id="m-cat" style="width:100%;padding:15px;border-radius:12px;background:var(--c2);border:1px solid var(--bdr);color:#fff">
+      <option value="all">ทั่วไป (Mixed)</option>
+      <option value="food">อาหาร (Food)</option>
+      <option value="place">สถานที่ (Places)</option>
+    </select>
+  </div>
+  <button class="btn" onclick="doCreate()">สร้างห้อง Online</button>
+  <button class="btn btn-sec" onclick="showScreen('s-home')">กลับ</button>
+</div>
+
+<div id="s-join" class="screen">
+  <h2 id="t-join-h">เข้าร่วมเกม</h2>
+  <div class="card">
+    <input type="text" id="j-name" placeholder="ชื่อของคุณ" style="width:100%;padding:15px;border-radius:12px;background:var(--c2);border:1px solid var(--bdr);color:#fff;margin-bottom:10px">
+    <input type="number" id="j-room" placeholder="รหัสห้อง 4 หลัก" style="width:100%;padding:15px;border-radius:12px;background:var(--c2);border:1px solid var(--bdr);color:#fff">
+  </div>
+  <button class="btn" onclick="doJoin()">ตกลง</button>
+  <button class="btn btn-sec" onclick="showScreen('s-home')">ยกเลิก</button>
+</div>
+
+<div id="s-lobby" class="screen">
+  <h2>ROOM: <span id="l-room" class="gold">----</span></h2>
+  <div class="card">
+    <div id="l-list" style="text-align:left"></div>
+  </div>
+  <button class="btn" id="l-start" style="display:none" onclick="doStart()">เริ่มเกมเลย!</button>
+  <p id="l-wait" style="text-align:center;color:var(--dim)">รอหัวหน้าห้อง...</p>
+</div>
+
+<div id="s-game" class="screen">
+  <div class="timer-wrap">
+    <svg class="t-svg"><circle class="t-bg" cx="45" cy="45" r="40"/><circle id="t-bar" class="t-bar" cx="45" cy="45" r="40"/></svg>
+    <div id="t-num">300</div>
+  </div>
+  <div class="card">
+    <p id="t-ur-role" style="color:var(--dim)">บทบาทของคุณ</p>
+    <h2 id="g-role" class="gold">---</h2>
+    <div id="g-word-box" style="display:none;margin-top:20px;padding-top:20px;border-top:1px solid var(--bdr)">
+      <p id="t-secret" style="color:var(--dim)">คำลับคือ</p>
+      <h2 id="g-word" style="font-size:32px">---</h2>
+    </div>
+  </div>
+  <button class="btn btn-sec" onclick="doEnd()">จบช่วงถามตอบ</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+// FIREBASE CONFIG (YOURS)
+const firebaseConfig = {
+  apiKey: "AIzaSyCKm7NygM_GB-UCjlZKdATbwlUk4iEprFc",
+  authDomain: "mygame-57017.firebaseapp.com",
+  databaseURL: "https://mygame-57017-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mygame-57017",
+  storageBucket: "mygame-57017.firebasestorage.app",
+  messagingSenderId: "152512661743",
+  appId: "1:152512661743:web:fc0c123e700ce2c95bb31a",
+  measurementId: "G-9TEVYPDJCR"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// DATA
+const WORDS = ["ชานมไข่มุก", "เครื่องซักผ้า", "สถานีอวกาศ", "วาฬสีน้ำเงิน", "ภูเขาไฟฟูจิ", "โดรน", "ส้มตำ", "บิตคอยน์", "อินเทอร์เน็ต", "ไดโนเสาร์", "ลิฟต์", "วัคซีน", "พาวเวอร์แบงค์", "แมงกะพรุน", "ทุเรียน"];
+const TX = {
+  th: { create:"สร้างห้องใหม่", join:"เข้าร่วมห้อง", secret:"คำลับคือ", ur_role:"บทบาทของคุณ" },
+  en: { create:"Create Room", join:"Join Room", secret:"Secret Word", ur_role:"Your Role" }
+};
+let curLang = 'th';
+let myId = localStorage.getItem('insider_id') || Math.random().toString(36).substr(2, 9);
+localStorage.setItem('insider_id', myId);
+let roomId = null;
+let isMaster = false;
+let timer;
+
+// CORE FUNCTIONS
+window.showScreen = (id) => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+};
+
+window.toggleLang = () => {
+  curLang = curLang === 'th' ? 'en' : 'th';
+  document.getElementById('t-create').textContent = TX[curLang].create;
+  document.getElementById('t-join').textContent = TX[curLang].join;
+  // เพิ่มส่วนแปลภาษาอื่นๆ ตาม V5...
+};
+
+window.doCreate = async () => {
+  const name = document.getElementById('m-name').value || "Player";
+  roomId = Math.floor(1000 + Math.random() * 9000).toString();
+  isMaster = true;
+  await set(ref(db, `rooms/${roomId}`), {
+    status: 'lobby',
+    masterId: myId,
+    players: { [myId]: { name, id: myId } },
+    createdAt: Date.now()
+  });
+  initSync();
+};
+
+window.doJoin = async () => {
+  const name = document.getElementById('j-name').value || "Guest";
+  const rId = document.getElementById('j-room').value;
+  const snap = await get(ref(db, `rooms/${rId}`));
+  if(!snap.exists()) return alert("Room not found!");
+  roomId = rId;
+  await update(ref(db, `rooms/${roomId}/players/${myId}`), { name, id: myId });
+  initSync();
+};
+
+function initSync() {
+  showScreen('s-lobby');
+  document.getElementById('l-room').textContent = roomId;
+  onValue(ref(db, `rooms/${roomId}`), (snap) => {
+    const data = snap.val();
+    if(!data) return;
+    
+    // Lobby List
+    const list = document.getElementById('l-list');
+    list.innerHTML = Object.values(data.players).map(p => `
+      <div class="p-item">
+        <span class="p-name">${p.name}</span>
+        ${p.id === data.masterId ? '<span class="p-badge">MASTER</span>' : ''}
+      </div>
+    `).join('');
+
+    if(isMaster) document.getElementById('l-start').style.display = 'block';
+
+    // Game Logic
+    if(data.status === 'gaming') {
+      showScreen('s-game');
+      const myRole = data.roles[myId];
+      document.getElementById('g-role').textContent = myRole;
+      if(myRole === 'Master' || myRole === 'Insider') {
+        document.getElementById('g-word-box').style.display = 'block';
+        document.getElementById('g-word').textContent = data.word;
+      }
+      runTimer(300);
+    }
+  });
+}
+
+window.doStart = async () => {
+  const snap = await get(ref(db, `rooms/${roomId}/players`));
+  const players = snap.val();
+  const ids = Object.keys(players);
+  if(ids.length < 2) return alert("Need at least 2 players!");
+
+  const word = WORDS[Math.floor(Math.random() * WORDS.length)];
+  const roles = {};
+  const others = ids.filter(id => id !== myId);
+  const insiderId = others[Math.floor(Math.random() * others.length)];
+
+  ids.forEach(id => {
+    if(id === myId) roles[id] = 'Master';
+    else if(id === insiderId) roles[id] = 'Insider';
+    else roles[id] = 'Common';
+  });
+
+  update(ref(db, `rooms/${roomId}`), { status: 'gaming', word, roles });
+};
+
+function runTimer(sec) {
+  clearInterval(timer);
+  let left = sec;
+  const bar = document.getElementById('t-bar');
+  timer = setInterval(() => {
+    left--;
+    document.getElementById('t-num').textContent = left;
+    bar.style.strokeDashoffset = 251 - (251 * left / sec);
+    if(left <= 0) {
+      clearInterval(timer);
+      alert("Time is up! Let's Vote.");
+    }
+  }, 1000);
+}
+
+window.doEnd = () => {
+  if(confirm("End question time and go to voting?")) {
+    update(ref(db, `rooms/${roomId}`), { status: 'voting' });
+  }
+};
+</script>
+</body>
+</html>
